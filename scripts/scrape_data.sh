@@ -1,3 +1,0 @@
-cd match_predict_crawler
-scrape_results.sh
-scrape_ratings.sh

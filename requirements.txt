@@ -7,3 +7,4 @@ scikit-learn==0.22.1
 seaborn==0.10.1
 beautifulsoup4==4.9.1
 requests==2.23.0
+click==7.1.2
