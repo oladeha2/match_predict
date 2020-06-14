@@ -9,11 +9,11 @@ class FootballResultCrawler:
     match_id = 0
     nations_of_interest = [
         'England',
-        # 'Germany',
-        # 'France',
-        # 'Italy',
-        # 'Spain',
-        # 'Netherlands'
+        'Germany',
+        'France',
+        'Italy',
+        'Spain',
+        'Netherlands'
     ]
     league_seasons = [f"{year}/{year+1}" for year in range(2004, 2019)]
     json_file = '../data/results.json'
