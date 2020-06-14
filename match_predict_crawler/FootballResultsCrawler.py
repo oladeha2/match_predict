@@ -1,8 +1,3 @@
-# may need to refactor this to use yield as opposed to the method I have in now where I am storing
-# everything in memory, a bit inefficient and is more in tandem with the way things work if I was to write this code
-# in a more formal environement
-
-
 import requests as req
 import json as js
 
@@ -32,6 +27,7 @@ class FootballResultCrawler:
         self.home_url = home_url
         self.parse_home(home_url)
         self.write_to_json()
+        print(f"Number of matches saved {len(self.results_dict['matches'])}")
 
     def get_parser(self, url):
         page = req.get(url)
