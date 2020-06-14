@@ -2,6 +2,7 @@ import requests as req
 import json as js
 
 from bs4 import BeautifulSoup as BS
+from datetime import datetime
 
 
 class FootballResultCrawler:
@@ -19,14 +20,17 @@ class FootballResultCrawler:
     # dict that will be written to the above file, will contain the desired results objects
     results_dict = {
         "matches": [
-
         ]
     }
 
     def __init__(self, home_url):
         self.home_url = home_url
+        start_time = datetime.now()
         self.parse_home(home_url)
         self.write_to_json()
+        end_time = datetime.now()
+        time_taken = end_time - start_time
+        print(f"Time Taken to Gather Results {time_taken}")
         print(f"Number of matches saved {len(self.results_dict['matches'])}")
 
     def get_parser(self, url):
