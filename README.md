@@ -8,6 +8,6 @@ Each row of data includes the following data; player name, overall, potential, n
 
 A data analysis is carried out on the FIFA ratings data set produced and can be found in the notebooks folder.
 
-The FIFA ratings dataset can be obtained locally by cloning this repository and running the scrape_ratings.sh script the dataset will be saved in data/ratings.csv  
+The FIFA ratings dataset can be obtained locally by cloning this repository and running the following command python create-dataset.py --data ratings
 
 More details will be added to this README as more of the project is being completed. The aim of this project is for it to be an independent end to end Machine Learning project, encompasing all aspcets of machine learning. from data gathering, feature selection, feature engineering, model selection, experimentation all the way to some sort of deployment or the creation of some sort of API from the final model regardless of its accuracy. 
