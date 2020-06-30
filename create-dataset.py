@@ -1,13 +1,13 @@
 import click
-import os
+import subprocess
 
 
 def scrape_results():
-    os.system('scripts/scrape_results.sh')
+    subprocess.run(['/bin/bash', './scripts/scrape_results.sh'])
 
 
 def scrape_ratings():
-    os.system('scripts/scrape_ratings.sh')
+    subprocess.run(['/bin/bash', './scripts/scrape_ratings.sh'])
 
 
 command_dict = {

@@ -1,5 +1,6 @@
 import requests as req
 import json as js
+import pprint
 
 from bs4 import BeautifulSoup as BS
 from datetime import datetime
@@ -16,7 +17,7 @@ class FootballResultCrawler:
         'Netherlands'
     ]
     league_seasons = [f"{year}/{year+1}" for year in range(2004, 2019)]
-    json_file = '../data/results.json'
+    json_file_name = '../data/results.json'
     # dict that will be written to the above file, will contain the desired results objects
     results_dict = {
         "matches": [
@@ -126,7 +127,6 @@ class FootballResultCrawler:
 
     def get_fixture_round_from_url(self, url):
         url_elements = url.split('/')
-        print(f"split elements {url_elements}")
         return url_elements[len(url_elements) - 2]
 
     def parse_fixture_page_from_results_page(self, league_round_parser, season, match_round):
@@ -141,7 +141,7 @@ class FootballResultCrawler:
             match_report = row.find_all('td')[5].find('a')
             match_report_url = self.home_url + match_report['href']
             match_report_parser = self.get_parser(match_report_url)
-            self.parse_match_report(match_report_parser, season, match_round)
+            self.parse_match_report(match_report_parser, season, match_round, match_report_url)
 
     def get_lineups(self, lineups):
         """
@@ -156,7 +156,7 @@ class FootballResultCrawler:
                 home_away_lineups[index].append(player_name)
         return home_away_lineups[0], home_away_lineups[1]
 
-    def create_match_dict(self, home_team, away_team, home_score, away_score, home_lineup, away_lineup, league_round, league_name, season):
+    def create_match_dict(self, home_team, away_team, home_score, away_score, home_lineup, away_lineup, league_round, league_name, season, match_url):
         """
             :param home_team: string representing the name of the home team of the match
             :param away_team: string representing the name of the away team of the match
@@ -166,6 +166,8 @@ class FootballResultCrawler:
             :param away_lineup: list of strings, of the starting eleven players of the away team
             :param league_round: string that represents the league round the match takes place in
             :param league_name: string that represents the name of the league this match took place in
+            :param season: string representing the season the match was played in
+            :param match_url: string representing the url of the match report
             :return: A dictionary that contains all the relevant match information that should be eventually stored as a dataset entry
         """
 
@@ -192,10 +194,11 @@ class FootballResultCrawler:
             "home_eleven": home_lineup,
             "away_eleven": away_lineup,
             "league": league_name,
-            "season": season
+            "season": season,
+            "match_report_url": match_url
         }
 
-    def parse_match_report(self, match_report_parser, season, match_round):
+    def parse_match_report(self, match_report_parser, season, match_round, match_url):
         """
         :param match_report_parser: Parser for the match result page for a match in a round in specific league
         :param season: Current season of the match
@@ -205,21 +208,24 @@ class FootballResultCrawler:
         current_league = match_report_parser.find('div', {'class': 'subnavi'}).find('a', {'class': "active"}).text
         score = match_report_parser.find('div', {'class': 'box'}).find('div', {'class': 'resultat'}).text.strip()
         teams_table = match_report_parser.find('div', {'class': 'box'}).find('div', {'class': 'data'}).find('table', {'class': 'standard_tabelle'}).find_all('th')
-        lineups = match_report_parser.find('div', {'class': 'box'}).find('div', {'class': 'data'}).find_all('table')[2].find('tr').find_all('td', {'width': '50%'})
+        lineups = match_report_parser.find('div', {'class': 'box'}).find('div', {'class': 'data'}).find_all('td', {'width': '50%'})
+
         home_lineup, away_lineup = self.get_lineups(lineups)
         home_team = teams_table[0].find('a').text
         away_team = teams_table[2].find('a').text
         scores = score.split(':')
         home_score = scores[0]
         away_score = scores[1]
-        match_object = js.dumps(self.create_match_dict(home_team, away_team, home_score, away_score, home_lineup, away_lineup, match_round, current_league, season))
-        print(f"Match: {match_object}")
-        self.results_dict['matches'].append(match_object)
+        match_dict = self.create_match_dict(home_team, away_team, home_score, away_score, home_lineup, away_lineup, match_round, current_league, season, match_url)
+        print('-'*100)
+        print(js.dumps(match_dict, indent=4))
+        print('-'*100)
+        self.results_dict['matches'].append(match_dict)
 
     def write_to_json(self):
-        with open(self.json_file, 'w') as json_file:
+        with open(self.json_file_name, 'w') as json_file:
             js.dump(self.results_dict, json_file, indent=4)
-        print(f"The results data has been written to the location {self.json_file}")
+        print(f"The results data has been written to the location {self.json_file_name}")
 
 
 if __name__ == '__main__':
