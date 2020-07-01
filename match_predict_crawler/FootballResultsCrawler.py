@@ -201,6 +201,7 @@ class FootballResultCrawler:
         """
         :param match_report_parser: Parser for the match result page for a match in a round in specific league
         :param season: Current season of the match
+        :param match_round: String representing the round the match is being played in
         :param match_url: String representing the url for the match report on worldfootball.net (good for debugging the code if necessary)
         Creates a JSON object that contains all the relevant information for a given match
         """
