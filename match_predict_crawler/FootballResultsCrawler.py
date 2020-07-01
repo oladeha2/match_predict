@@ -1,6 +1,5 @@
 import requests as req
 import json as js
-import pprint
 
 from bs4 import BeautifulSoup as BS
 from datetime import datetime
@@ -202,7 +201,7 @@ class FootballResultCrawler:
         """
         :param match_report_parser: Parser for the match result page for a match in a round in specific league
         :param season: Current season of the match
-        :param match_round: The round the match was played in that season
+        :param match_url: String representing the url for the match report on worldfootball.net (good for debugging the code if necessary)
         Creates a JSON object that contains all the relevant information for a given match
         """
         current_league = match_report_parser.find('div', {'class': 'subnavi'}).find('a', {'class': "active"}).text
@@ -218,13 +217,13 @@ class FootballResultCrawler:
         away_score = scores[1]
         match_dict = self.create_match_dict(home_team, away_team, home_score, away_score, home_lineup, away_lineup, match_round, current_league, season, match_url)
         print('-'*100)
-        print(js.dumps(match_dict, indent=4))
+        print(js.dumps(match_dict, indent=4, ensure_ascii=False))
         print('-'*100)
         self.results_dict['matches'].append(match_dict)
 
     def write_to_json(self):
-        with open(self.json_file_name, 'w') as json_file:
-            js.dump(self.results_dict, json_file, indent=4)
+        with open(self.json_file_name, 'w', encoding='utf-8') as json_file:
+            js.dump(self.results_dict, json_file, indent=4, ensure_ascii=False)
         print(f"The results data has been written to the location {self.json_file_name}")
 
 
