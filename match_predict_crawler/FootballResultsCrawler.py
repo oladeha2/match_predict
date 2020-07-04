@@ -7,6 +7,7 @@ from datetime import datetime
 
 class FootballResultCrawler:
     match_id = 0
+    failed_urls = []
     nations_of_interest = [
         'England',
         'Germany',
@@ -17,6 +18,7 @@ class FootballResultCrawler:
     ]
     league_seasons = [f"{year}/{year+1}" for year in range(2004, 2019)]
     json_file_name = '../data/results.json'
+    failed_urls_file = '../failed_urls.txt'
     # dict that will be written to the above file, will contain the desired results objects
     results_dict = {
         "matches": [
@@ -26,18 +28,19 @@ class FootballResultCrawler:
     def __init__(self, home_url):
         self.home_url = home_url
         start_time = datetime.now()
-        self.parse_home(home_url)
-        self.write_to_json()
+        self.get_match_url_dicts(home_url)
         end_time = datetime.now()
         time_taken = end_time - start_time
         print(f"Time Taken to Gather Results {time_taken}")
-        print(f"Number of matches saved {len(self.results_dict['matches'])}")
+        print(f"Number of Matches Saved {len(self.results_dict['matches'])} \n Number of Matches Failed: {len(self.failed_urls)} ")
+        self.write_files()
+        print(f"Results written to {self.json_file_name}: Failed Urls Written to {self.failed_urls_file}")
 
     def get_parser(self, url):
         page = req.get(url)
         return BS(page.content, 'html.parser')
 
-    def parse_home(self, home_url):
+    def get_match_url_dicts(self, home_url):
         """
             Get the URLs of the league home page of the nation/leagues of interest
         """
@@ -140,7 +143,14 @@ class FootballResultCrawler:
             match_report = row.find_all('td')[5].find('a')
             match_report_url = self.home_url + match_report['href']
             match_report_parser = self.get_parser(match_report_url)
-            self.parse_match_report(match_report_parser, season, match_round, match_report_url)
+            print('-' * 100)
+            try:
+                self.parse_match_report(match_report_parser, season, match_round, match_report_url)
+            except:
+                self.failed_urls.append(match_report_url)
+                print(f"{match_report_url} Failed Skipping to the next")
+                continue
+            print('-' * 100)
 
     def get_lineups(self, lineups):
         """
@@ -217,15 +227,20 @@ class FootballResultCrawler:
         home_score = scores[0]
         away_score = scores[1]
         match_dict = self.create_match_dict(home_team, away_team, home_score, away_score, home_lineup, away_lineup, match_round, current_league, season, match_url)
-        print('-'*100)
+
         print(js.dumps(match_dict, indent=4, ensure_ascii=False))
         print('-'*100)
         self.results_dict['matches'].append(match_dict)
 
-    def write_to_json(self):
+    def write_files(self):
+        # write successful match urls
         with open(self.json_file_name, 'w', encoding='utf-8') as json_file:
             js.dump(self.results_dict, json_file, indent=4, ensure_ascii=False)
         print(f"The results data has been written to the location {self.json_file_name}")
+
+        # write failed urls to a text file
+        with open(self.failed_urls_file,'w') as f:
+            f.write('\n'.join(self.failed_urls))
 
 
 if __name__ == '__main__':
