@@ -1,13 +1,22 @@
 import click
 import subprocess
+import os
+
+from match_predict_crawler.FootballResultsCrawler import FootballResultsCrawler
+from os import path
 
 
 def scrape_results():
-    subprocess.run(['/bin/bash', './scripts/scrape_results.sh'])
+    FootballResultsCrawler('https://www.worldfootball.net')
+
+
+ratings_path = 'data/ratings.csv'
 
 
 def scrape_ratings():
-    subprocess.run(['/bin/bash', './scripts/scrape_ratings.sh'])
+    if path.isfile(ratings_path):
+        os.remove(ratings_path)
+    subprocess.run(['/bin/bash', 'cd match_predict_crawler; scrapy crawl fifa_ratings -o data/ratings.csv'])
 
 
 command_dict = {
