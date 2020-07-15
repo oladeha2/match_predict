@@ -20,30 +20,46 @@ class FootballResultsCrawler:
         'Netherlands'
     ]
     league_seasons = [f"{year}/{year+1}" for year in range(2004, 2019)]
-    json_file_name = '../data/results.json'
-    failed_urls_file = '..data/failed_urls.txt'
+    json_file_name = 'data/results.json'
+    processed_urls_file_name = 'data/processed_urls.txt'
+    failed_urls_file = 'data/failed_urls.txt'
     # dict that will be written to the above file, will contain the desired results objects
     results_dict = {
         "matches": [
         ]
     }
 
-    def data_exists(self):
-        return path.isfile(self.json_file_name)
+    def data_exists(self, file_name):
+        return path.isfile(file_name)
 
     def processed(self, url):
         return url in self.urls_processed
 
+    def open_text_file_as_list(self, file_name):
+        with open(file_name, encoding='utf-8') as f:
+            values = [line.rstrip("/n") for line in f]
+        return values
+
     def load_data(self):
-        if self.data_exists():
+        if self.data_exists(self.json_file_name):
             try:
                 with open(self.json_file_name, 'r') as f:
                     self.results_dict = js.load(f)
-                print("Using already Populated Data")
+                print(f"Previous Results Data Exists. {len(self.results_dict['matches'])} loaded")
             except js.decoder.JSONDecodeError:
                 print("This is a new run, starting from scratch with no data")
         else:
             print("This is a new run, starting from scratch with no data")
+
+        # read in failed urls
+        if self.data_exists(self.failed_urls_file):
+            self.failed_urls = self.open_text_file_as_list(self.failed_urls_file)
+            print(f"{len(self.failed_urls)} URLs failed in previous runs")
+
+        # read in processed urls
+        if self.data_exists(self.processed_urls_file_name):
+            self.urls_processed = self.open_text_file_as_list(self.processed_urls_file_name)
+            print(f"{len(self.urls_processed)} URLs already processed in previous runs")
 
     def __init__(self, home_url):
         self.home_url = home_url
@@ -186,9 +202,10 @@ class FootballResultsCrawler:
                 try:
                     self.parse_match_report(match_report_parser, season, match_round, match_report_url)
                     self.urls_processed.append(match_report_url)
-                except:
+                except Exception as e:
                     self.failed_urls.append(match_report_url)
                     print(f"{match_report_url} Failed Skipping to the next")
+                    print(f"Exception message {e}")
                     continue
                 print('-' * 100)
 
@@ -271,6 +288,7 @@ class FootballResultsCrawler:
         print(js.dumps(match_dict, indent=4, ensure_ascii=False))
         print('-'*100)
         self.results_dict['matches'].append(match_dict)
+        self.write_files()
 
     def write_files(self):
         # write successful match urls
@@ -280,8 +298,13 @@ class FootballResultsCrawler:
 
         if len(self.failed_urls) > 0:
             # write failed urls to a text file
-            with open(self.failed_urls_file,'w') as f:
+            with open(self.failed_urls_file, 'w') as f:
                 f.write('\n'.join(self.failed_urls))
+
+        if len(self.urls_processed) > 0:
+            # write the processed urls to a text file
+            with open(self.processed_urls_file_name, 'w') as f:
+                f.write('\n'.join(self.urls_processed))
 
 
 if __name__ == '__main__':

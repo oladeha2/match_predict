@@ -3,3 +3,4 @@ notebooks/.ipynb_checkpoints
 .idea
 match_predict_crawler/match_predict_crawler/__pycache__/
 match_predict_crawler/match_predict_crawler/spiders/__pycache__/
+match_predict_crawler/__pycache__/
