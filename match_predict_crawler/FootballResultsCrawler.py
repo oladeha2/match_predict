@@ -59,6 +59,7 @@ class FootballResultsCrawler:
         # read in processed urls
         if self.data_exists(self.processed_urls_file_name):
             self.urls_processed = self.open_text_file_as_list(self.processed_urls_file_name)
+            self.match_id = len(self.urls_processed) + 1
             print(f"{len(self.urls_processed)} URLs already processed in previous runs")
 
     def __init__(self, home_url):
