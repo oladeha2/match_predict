@@ -37,7 +37,7 @@ class FootballResultsCrawler:
 
     def open_text_file_as_list(self, file_name):
         with open(file_name, encoding='utf-8') as f:
-            values = [line.rstrip("/n") for line in f]
+            values = [line.rstrip("\n") for line in f]
         return values
 
     def load_data(self):
@@ -63,6 +63,7 @@ class FootballResultsCrawler:
             print(f"{len(self.urls_processed)} URLs already processed in previous runs")
 
     def __init__(self, home_url):
+        print(f"League seasons  {self.league_seasons}")
         self.home_url = home_url
         attempts_start = datetime.now()
         for attempt in range(0, self.RETRIES):
@@ -78,7 +79,7 @@ class FootballResultsCrawler:
                 self.write_files()
                 continue
         attempts_end = datetime.now()
-        print(f"Total time taken to scrape {len(self.results_dict['matches'])} matches is: {attempts_start - attempts_end} in {self.RETRIES} attempts")
+        print(f"Total time taken to scrape {len(self.results_dict['matches'])} matches is: {attempts_end - attempts_start} in {self.RETRIES} attempts")
 
     def do_scrape(self):
         self.parse_all_matches(self.home_url)
@@ -294,17 +295,29 @@ class FootballResultsCrawler:
     def write_files(self):
         # write successful match urls
         with open(self.json_file_name, 'w', encoding='utf-8') as json_file:
+            # delete contents of file first
+            if self.data_exists(self.json_file_name):
+                json_file.seek(0)
+                json_file.truncate()
             js.dump(self.results_dict, json_file, indent=4, ensure_ascii=False)
         print(f"The results data has been written to the location {self.json_file_name}")
 
         if len(self.failed_urls) > 0:
             # write failed urls to a text file
             with open(self.failed_urls_file, 'w') as f:
+                # delete contents of file first
+                if self.data_exists(self.failed_urls_file):
+                    f.seek(0)
+                    f.truncate()
                 f.write('\n'.join(self.failed_urls))
 
         if len(self.urls_processed) > 0:
             # write the processed urls to a text file
             with open(self.processed_urls_file_name, 'w') as f:
+                # delete contents of file first
+                if self.data_exists(self.processed_urls_file_name):
+                    f.seek(0)
+                    f.truncate()
                 f.write('\n'.join(self.urls_processed))
 
 
